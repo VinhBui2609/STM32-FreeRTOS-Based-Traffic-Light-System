@@ -176,15 +176,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
 	if(HAL_GetTick() - lastPress > 300)
 	{
-		// If North-West Road has Pedestrian
-		if(HAL_GPIO_ReadPin(NS_PedesButton_GPIO_Port, NS_PedesButton_Pin) == GPIO_PIN_RESET)
+		// If North-West Road has Pedestrian and Light is green
+		if((HAL_GPIO_ReadPin(NS_PedesButton_GPIO_Port, NS_PedesButton_Pin) == GPIO_PIN_RESET)
+			&& (NS.currentState == GREEN_STATE))
 		{
 			lastPress = HAL_GetTick();
 			osEventFlagsSet(buttonEventHandle, BUTTON_NS);
 		}
 
-		// If West-East Road has Pedestrian
-		if(HAL_GPIO_ReadPin(WE_PedesButton_GPIO_Port, WE_PedesButton_Pin) == GPIO_PIN_RESET)
+		// If West-East Road has Pedestrian and Light is green
+		if((HAL_GPIO_ReadPin(WE_PedesButton_GPIO_Port, WE_PedesButton_Pin) == GPIO_PIN_RESET)
+			&& (WE.currentState == GREEN_STATE))
 		{
 			lastPress = HAL_GetTick();
 			osEventFlagsSet(buttonEventHandle, BUTTON_WE);

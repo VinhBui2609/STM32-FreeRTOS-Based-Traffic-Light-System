@@ -24,12 +24,12 @@
 
 
 // Get the passed time of the light of a state
-uint32_t getElapsed(TrafficLight* self) {
+uint32_t getElapsed(TrafficLight_t* self) {
 	return osKernelGetTickCount() - self->state_start_time;
 }
 
 
-void RED_STATE(TrafficLight* self)
+void RED_STATE(TrafficLight_t* self)
 {
 	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_RESET);
@@ -44,7 +44,7 @@ void RED_STATE(TrafficLight* self)
 	}
 }
 
-void GREEN_STATE(TrafficLight* self) {
+void GREEN_STATE(TrafficLight_t* self) {
 	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_RESET);
@@ -56,7 +56,7 @@ void GREEN_STATE(TrafficLight* self) {
 	}
 }
 
-void YELLOW_STATE(TrafficLight* self) {
+void YELLOW_STATE(TrafficLight_t* self) {
 	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_SET);
@@ -68,7 +68,7 @@ void YELLOW_STATE(TrafficLight* self) {
 	}
 }
 
-void Button_Pressed(TrafficLight* current, TrafficLight* other) {
+void Button_Pressed(TrafficLight_t* current, TrafficLight_t* other) {
 	uint32_t elapsed_green = getElapsed(current);
 	uint32_t remain_green = current->green_duration - getElapsed(current);
 
@@ -88,14 +88,14 @@ void Button_Pressed(TrafficLight* current, TrafficLight* other) {
 		other->red_duration = 4000 + elapsed_red;
 	}
 
-	// if red is less than 4s, do nothing
+	// if green is less than 2s, do nothing
 
 }
 
 // Input: Light (NS, WE...)
 // Output: State name + remaining time of that state
 // stateName is ** since its value is a string (an array of characters)
-void getStateInfo(TrafficLight* self, char** stateName, uint32_t* remainTime) {
+void getStateInfo(TrafficLight_t* self, char** stateName, uint32_t* remainTime) {
 	uint32_t elapsed_time = getElapsed(self);
 
 	if(self->currentState == RED_STATE)
@@ -115,8 +115,10 @@ void getStateInfo(TrafficLight* self, char** stateName, uint32_t* remainTime) {
 	}
 }
 
+
+
 // Initialization of Lights
-extern TrafficLight NS, WE;
+extern TrafficLight_t NS, WE;
 
 void Init_NS() {
 	NS.lightPort = NS_GPIO_Port;

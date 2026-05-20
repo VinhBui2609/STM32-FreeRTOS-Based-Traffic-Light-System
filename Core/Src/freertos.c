@@ -78,6 +78,13 @@ const osThreadAttr_t LoggerTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+/* Definitions for EmergencyTask */
+osThreadId_t EmergencyTaskHandle;
+const osThreadAttr_t EmergencyTask_attributes = {
+  .name = "EmergencyTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* Definitions for uartMutex */
 osMutexId_t uartMutexHandle;
 const osMutexAttr_t uartMutex_attributes = {
@@ -91,7 +98,7 @@ const osEventFlagsAttr_t buttonEvent_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-TrafficLight NS, WE;	// NS: North-South
+TrafficLight_t NS, WE;	// NS: North-South
 						// WE: West-East
 
 /* USER CODE END FunctionPrototypes */
@@ -100,6 +107,7 @@ void StartNorthTask(void *argument);
 void StartEastTask(void *argument);
 void StartPedestrianTask(void *argument);
 void StartLoggerTask(void *argument);
+void StartEmergencyTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -147,6 +155,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of LoggerTask */
   LoggerTaskHandle = osThreadNew(StartLoggerTask, NULL, &LoggerTask_attributes);
+
+  /* creation of EmergencyTask */
+  EmergencyTaskHandle = osThreadNew(StartEmergencyTask, NULL, &EmergencyTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -269,6 +280,26 @@ void StartLoggerTask(void *argument)
 	  }
 
   /* USER CODE END StartLoggerTask */
+}
+
+/* USER CODE BEGIN Header_StartEmergencyTask */
+/**
+* @brief Function implementing the EmergencyTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartEmergencyTask */
+void StartEmergencyTask(void *argument)
+{
+  /* USER CODE BEGIN StartEmergencyTask */
+  /* Infinite loop */
+  for(;;)
+  {
+
+
+    osDelay(1);
+  }
+  /* USER CODE END StartEmergencyTask */
 }
 
 /* Private application code --------------------------------------------------*/
