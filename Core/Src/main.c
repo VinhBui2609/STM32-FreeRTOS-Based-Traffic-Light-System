@@ -174,6 +174,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+  	// Avoiding multiple pressing
 	if(HAL_GetTick() - lastPress > 300)
 	{
 		// If North-West Road has Pedestrian
