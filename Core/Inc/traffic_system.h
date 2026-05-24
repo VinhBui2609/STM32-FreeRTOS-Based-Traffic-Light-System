@@ -27,7 +27,6 @@
 #include "cmsis_os.h"
 /* USER CODE END Includes */
 
-
 #define BUTTON_NS	(1U << 0)
 #define BUTTON_WE	(1U << 1)
 
@@ -65,6 +64,10 @@ void Init_WE(void);
 void RED_STATE(TrafficLight_t* self);
 void GREEN_STATE(TrafficLight_t* self);
 void YELLOW_STATE(TrafficLight_t* self);
+
+void RED_ON(TrafficLight_t* self);
+void YELLOW_ON(TrafficLight_t* self);
+void GRREN_ON(TrafficLight_t* self);
 
 void Button_Pressed(TrafficLight_t* current, TrafficLight_t* other);
 

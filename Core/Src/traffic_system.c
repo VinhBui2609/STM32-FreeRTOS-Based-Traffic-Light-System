@@ -23,6 +23,30 @@
 /* USER CODE END Includes */
 
 
+void RED_ON(TrafficLight_t* self)
+{
+	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_RESET);
+}
+
+void GRREN_ON(TrafficLight_t* self)
+{
+	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_RESET);
+}
+
+void YELLOW_ON(TrafficLight_t* self)
+{
+	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_SET);
+}
+
+
+
+
 // Get the passed time of the light of a state
 uint32_t getElapsed(TrafficLight_t* self) {
 	return osKernelGetTickCount() - self->state_start_time;
@@ -31,9 +55,7 @@ uint32_t getElapsed(TrafficLight_t* self) {
 
 void RED_STATE(TrafficLight_t* self)
 {
-	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_RESET);
+	RED_ON(self);
 
 	if(getElapsed(self) >= self->red_duration)
 	{
@@ -45,9 +67,7 @@ void RED_STATE(TrafficLight_t* self)
 }
 
 void GREEN_STATE(TrafficLight_t* self) {
-	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_RESET);
+	GRREN_ON(self);
 
 	if(getElapsed(self) >= self->green_duration) {
 		self->currentState = YELLOW_STATE;
@@ -57,9 +77,7 @@ void GREEN_STATE(TrafficLight_t* self) {
 }
 
 void YELLOW_STATE(TrafficLight_t* self) {
-	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_SET);
+	YELLOW_ON(self);
 
 	if(getElapsed(self) >= self->yellow_duration) {
 		self->currentState = RED_STATE;
