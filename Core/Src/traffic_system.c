@@ -86,7 +86,7 @@ void YELLOW_STATE(TrafficLight_t* self) {
 	}
 }
 
-void Button_Pressed(TrafficLight_t* current, TrafficLight_t* other) {
+void Pedestrian(TrafficLight_t* current, TrafficLight_t* other) {
 	uint32_t elapsed_green = getElapsed(current);
 	uint32_t remain_green = current->green_duration - getElapsed(current);
 
@@ -145,7 +145,7 @@ void Init_NS() {
 	NS.yellowPin = NS_YELLOW_Pin;
 
 	NS.currentState = GREEN_STATE;
-	NS.buttonState = Button_Pressed;
+	NS.buttonState = Pedestrian;
 
 	NS.state_start_time = osKernelGetTickCount();
 	NS.red_duration = 10000;
@@ -161,7 +161,7 @@ void Init_WE() {
 	WE.yellowPin = WE_YELLOW_Pin;
 
 	WE.currentState = RED_STATE;
-	WE.buttonState = Button_Pressed;
+	WE.buttonState = Pedestrian;
 
 	WE.state_start_time = osKernelGetTickCount();
 	WE.red_duration = 10000;

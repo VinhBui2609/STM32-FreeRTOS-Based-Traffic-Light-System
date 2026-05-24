@@ -69,7 +69,7 @@ void RED_ON(TrafficLight_t* self);
 void YELLOW_ON(TrafficLight_t* self);
 void GRREN_ON(TrafficLight_t* self);
 
-void Button_Pressed(TrafficLight_t* current, TrafficLight_t* other);
+void Pedestrian(TrafficLight_t* current, TrafficLight_t* other);
 
 uint32_t getElapsed(TrafficLight_t* self);
 void getStateInfo(TrafficLight_t* self, char** stateName, uint32_t* remainTime);
