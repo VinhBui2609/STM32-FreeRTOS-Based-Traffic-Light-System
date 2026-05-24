@@ -91,7 +91,7 @@ const osEventFlagsAttr_t buttonEvent_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-TrafficLight NS, WE;	// NS: North-South
+TrafficLight_t NS, WE;	// NS: North-South
 						// WE: West-East
 
 /* USER CODE END FunctionPrototypes */

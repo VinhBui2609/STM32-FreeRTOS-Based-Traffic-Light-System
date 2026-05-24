@@ -27,7 +27,6 @@
 #include "cmsis_os.h"
 /* USER CODE END Includes */
 
-
 #define BUTTON_NS	(1U << 0)
 #define BUTTON_WE	(1U << 1)
 
@@ -51,26 +50,29 @@ typedef struct TrafficLight {
 	uint32_t red_duration;
 	uint32_t yellow_duration;
 	uint32_t green_duration;
-} TrafficLight;
+} TrafficLight_t;
 
-extern TrafficLight NS;
-extern TrafficLight WE;
+extern TrafficLight_t NS;
+extern TrafficLight_t WE;
 
-typedef void (*StateFunc)(TrafficLight* self);
-typedef void (*ButtonFunc)(TrafficLight* current, TrafficLight* other);
+typedef void (*StateFunc)(TrafficLight_t* self);
+typedef void (*ButtonFunc)(TrafficLight_t* current, TrafficLight_t* other);
 
 void Init_NS(void);
 void Init_WE(void);
 
-void RED_STATE(TrafficLight* self);
-void GREEN_STATE(TrafficLight* self);
-void YELLOW_STATE(TrafficLight* self);
+void RED_STATE(TrafficLight_t* self);
+void GREEN_STATE(TrafficLight_t* self);
+void YELLOW_STATE(TrafficLight_t* self);
 
+void RED_ON(TrafficLight_t* self);
+void YELLOW_ON(TrafficLight_t* self);
+void GRREN_ON(TrafficLight_t* self);
 
-void Pedestrian(TrafficLight_t* current, TrafficLight_t* other);
+void Button_Pressed(TrafficLight_t* current, TrafficLight_t* other);
 
-uint32_t getElapsed(TrafficLight* self);
-void getStateInfo(TrafficLight* self, char** stateName, uint32_t* remainTime);
+uint32_t getElapsed(TrafficLight_t* self);
+void getStateInfo(TrafficLight_t* self, char** stateName, uint32_t* remainTime);
 
 
 
