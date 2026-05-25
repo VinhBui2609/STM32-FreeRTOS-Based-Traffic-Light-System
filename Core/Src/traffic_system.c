@@ -20,7 +20,37 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "traffic_system.h"
+#include "main.h"
+#include "usart.h"
 /* USER CODE END Includes */
+
+
+/* USER CODE BEGIN PV */
+extern uint8_t rxData;
+extern osEventFlagsId_t buttonEventHandle;
+/* USER CODE END PV */
+
+
+// For Interrupt from Serial Terminal (Likely hardware Button)
+ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+ {
+	 if(huart->Instance == USART2)
+	 {
+		 switch(rxData)
+		 {
+		 	 case 'n':
+		 		 osEventFlagsSet(buttonEventHandle, BUTTON_NS);
+		 		 break;
+
+		 	 case 'w':
+		 		 osEventFlagsSet(buttonEventHandle, BUTTON_WE);
+		 		 break;
+		 }
+
+		 // Restart the Interrupt reception
+		 HAL_UART_Receive_DMA(&huart2, &rxData, 1);
+	 }
+ }
 
 
 void RED_ON(TrafficLight_t* self)
@@ -43,7 +73,6 @@ void YELLOW_ON(TrafficLight_t* self)
 	HAL_GPIO_WritePin(self->lightPort, self->greenPin, OFF);
 	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, ON);
 }
-
 
 
 
