@@ -27,6 +27,11 @@
 #include "cmsis_os.h"
 /* USER CODE END Includes */
 
+#define PRESSED		GPIO_PIN_RESET
+#define OFF			GPIO_PIN_RESET
+#define ON			GPIO_PIN_SET
+
+
 #define BUTTON_NS	(1U << 0)
 #define BUTTON_WE	(1U << 1)
 

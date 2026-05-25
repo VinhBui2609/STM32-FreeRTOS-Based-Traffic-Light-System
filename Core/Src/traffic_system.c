@@ -25,23 +25,23 @@
 
 void RED_ON(TrafficLight_t* self)
 {
-	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(self->lightPort, self->redPin, ON);
+	HAL_GPIO_WritePin(self->lightPort, self->greenPin, OFF);
+	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, OFF);
 }
 
 void GRREN_ON(TrafficLight_t* self)
 {
-	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(self->lightPort, self->redPin, OFF);
+	HAL_GPIO_WritePin(self->lightPort, self->greenPin, ON);
+	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, OFF);
 }
 
 void YELLOW_ON(TrafficLight_t* self)
 {
-	HAL_GPIO_WritePin(self->lightPort, self->redPin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(self->lightPort, self->greenPin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(self->lightPort, self->redPin, OFF);
+	HAL_GPIO_WritePin(self->lightPort, self->greenPin, OFF);
+	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, ON);
 }
 
 
