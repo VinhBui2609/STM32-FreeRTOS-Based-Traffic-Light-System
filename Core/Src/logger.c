@@ -27,7 +27,5 @@ extern osMutexId_t uartMutexHandle;
 
 void LOG_Message(char* msg)
 {
-	osMutexAcquire(uartMutexHandle, osWaitForever);
 	HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-	osMutexRelease(uartMutexHandle);
 }
