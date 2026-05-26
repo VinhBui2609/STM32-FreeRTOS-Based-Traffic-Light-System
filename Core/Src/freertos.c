@@ -78,10 +78,10 @@ const osThreadAttr_t LoggerTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for uartMutex */
-osMutexId_t uartMutexHandle;
-const osMutexAttr_t uartMutex_attributes = {
-  .name = "uartMutex"
+/* Definitions for stateTimer */
+osTimerId_t stateTimerHandle;
+const osTimerAttr_t stateTimer_attributes = {
+  .name = "stateTimer"
 };
 /* Definitions for buttonEvent */
 osEventFlagsId_t buttonEventHandle;
@@ -100,6 +100,7 @@ void StartNorthTask(void *argument);
 void StartEastTask(void *argument);
 void StartPedestrianTask(void *argument);
 void StartLoggerTask(void *argument);
+void stateTimerCallback(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -115,9 +116,6 @@ void MX_FREERTOS_Init(void) {
 	Init_WE();
 
   /* USER CODE END Init */
-  /* Create the mutex(es) */
-  /* creation of uartMutex */
-  uartMutexHandle = osMutexNew(&uartMutex_attributes);
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -126,6 +124,10 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
+
+  /* Create the timer(s) */
+  /* creation of stateTimer */
+  stateTimerHandle = osTimerNew(stateTimerCallback, osTimerOnce, NULL, &stateTimer_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
@@ -152,6 +154,7 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
+  /* Create the event(s) */
   /* creation of buttonEvent */
   buttonEventHandle = osEventFlagsNew(&buttonEvent_attributes);
 
@@ -269,6 +272,33 @@ void StartLoggerTask(void *argument)
 	  }
 
   /* USER CODE END StartLoggerTask */
+}
+
+/* stateTimerCallback function */
+void stateTimerCallback(void *argument)
+{
+  /* USER CODE BEGIN stateTimerCallback */
+	TrafficLight_t* self = (TrafficLight_t*)argument;
+
+	if(self->currentState == RED_STATE)			// RED --> GREEN
+	{
+		self->currentState = GREEN_STATE;
+		self->state_start_time = osKernelGetTickCount();
+		self->red_duration = 10000;
+	}
+	else if(self->currentState == GREEN_STATE)	// GREEN --> YELLOW
+	{
+		self->currentState = YELLOW_STATE;
+		self->state_start_time = osKernelGetTickCount();
+		self->green_duration = 8000;
+	}
+	else if(self->currentState == YELLOW_STATE)	// YELLOW --> RED
+	{
+		self->currentState = RED_STATE;
+		self->state_start_time = osKernelGetTickCount();
+		self->yellow_duration = 2000;
+	}
+  /* USER CODE END stateTimerCallback */
 }
 
 /* Private application code --------------------------------------------------*/

@@ -31,6 +31,27 @@
 #define OFF			GPIO_PIN_RESET
 #define ON			GPIO_PIN_SET
 
+#define RED(self, x)													\
+	HAL_GPIO_WritePin((self)->lightPort, (self)->redPin, (x));			\
+	HAL_GPIO_WritePin((self)->lightPort, (self)->greenPin,				\
+						((x) == ON ? OFF : ON));						\
+	HAL_GPIO_WritePin((self)->lightPort, (self)->yellowPin, 			\
+						((x) == ON ? OFF : ON));						\
+
+#define GREEN(self, x)													\
+	HAL_GPIO_WritePin((self)->lightPort, (self)->redPin,				\
+						((x) == ON ? OFF : ON));						\
+	HAL_GPIO_WritePin((self)->lightPort, (self)->greenPin, (x));		\
+	HAL_GPIO_WritePin((self)->lightPort, (self)->yellowPin,				\
+						((x) == ON ? OFF : ON));						\
+
+#define YELLOW(self, x)													\
+	HAL_GPIO_WritePin((self)->lightPort, (self)->redPin,				\
+						((x) == ON ? OFF : ON));						\
+	HAL_GPIO_WritePin((self)->lightPort, (self)->greenPin,				\
+						((x) == ON ? OFF : ON));						\
+	HAL_GPIO_WritePin((self)->lightPort, (self)->yellowPin, (x));		\
+
 
 #define BUTTON_NS	(1U << 0)
 #define BUTTON_WE	(1U << 1)

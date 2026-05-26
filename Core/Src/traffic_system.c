@@ -28,6 +28,7 @@
 /* USER CODE BEGIN PV */
 extern uint8_t rxData;
 extern osEventFlagsId_t buttonEventHandle;
+extern osTimerId_t stateTimerHandle;
 /* USER CODE END PV */
 
 
@@ -53,66 +54,30 @@ extern osEventFlagsId_t buttonEventHandle;
  }
 
 
-void RED_ON(TrafficLight_t* self)
-{
-	HAL_GPIO_WritePin(self->lightPort, self->redPin, ON);
-	HAL_GPIO_WritePin(self->lightPort, self->greenPin, OFF);
-	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, OFF);
-}
-
-void GRREN_ON(TrafficLight_t* self)
-{
-	HAL_GPIO_WritePin(self->lightPort, self->redPin, OFF);
-	HAL_GPIO_WritePin(self->lightPort, self->greenPin, ON);
-	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, OFF);
-}
-
-void YELLOW_ON(TrafficLight_t* self)
-{
-	HAL_GPIO_WritePin(self->lightPort, self->redPin, OFF);
-	HAL_GPIO_WritePin(self->lightPort, self->greenPin, OFF);
-	HAL_GPIO_WritePin(self->lightPort, self->yellowPin, ON);
-}
-
-
 
 // Get the passed time of the light of a state
-uint32_t getElapsed(TrafficLight_t* self) {
+uint32_t getElapsed(TrafficLight_t* self)
+{
 	return osKernelGetTickCount() - self->state_start_time;
 }
 
 
 void RED_STATE(TrafficLight_t* self)
 {
-	RED_ON(self);
-
-	if(getElapsed(self) >= self->red_duration)
-	{
-		self->currentState = GREEN_STATE;
-		self->state_start_time = osKernelGetTickCount();
-
-		self->red_duration = 10000;
-	}
+	RED(self, ON);
+	osTimerStart(stateTimerHandle, self->red_duration);
 }
 
-void GREEN_STATE(TrafficLight_t* self) {
-	GRREN_ON(self);
-
-	if(getElapsed(self) >= self->green_duration) {
-		self->currentState = YELLOW_STATE;
-		self->state_start_time = osKernelGetTickCount();
-		self->green_duration = 8000;		// reset the duration of green
-	}
+void GREEN_STATE(TrafficLight_t* self)
+{
+	GREEN(self, ON);
+	osTimerStart(stateTimerHandle, self->green_duration);
 }
 
-void YELLOW_STATE(TrafficLight_t* self) {
-	YELLOW_ON(self);
-
-	if(getElapsed(self) >= self->yellow_duration) {
-		self->currentState = RED_STATE;
-		self->state_start_time = osKernelGetTickCount();
-		self->yellow_duration = 2000;		// reset the duration of yellow
-	}
+void YELLOW_STATE(TrafficLight_t* self)
+{
+	YELLOW(self, ON);
+	osTimerStart(stateTimerHandle, self->yellow_duration);
 }
 
 void Pedestrian(TrafficLight_t* current, TrafficLight_t* other) {
