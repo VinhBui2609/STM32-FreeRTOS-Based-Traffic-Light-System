@@ -50,20 +50,6 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for NorthTask */
-osThreadId_t NorthTaskHandle;
-const osThreadAttr_t NorthTask_attributes = {
-  .name = "NorthTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for EastTask */
-osThreadId_t EastTaskHandle;
-const osThreadAttr_t EastTask_attributes = {
-  .name = "EastTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
 /* Definitions for PedestrianTask */
 osThreadId_t PedestrianTaskHandle;
 const osThreadAttr_t PedestrianTask_attributes = {
@@ -96,8 +82,6 @@ TrafficLight_t NS, WE;	// NS: North-South
 
 /* USER CODE END FunctionPrototypes */
 
-void StartNorthTask(void *argument);
-void StartEastTask(void *argument);
 void StartPedestrianTask(void *argument);
 void StartLoggerTask(void *argument);
 void stateTimerCallback(void *argument);
@@ -115,6 +99,12 @@ void MX_FREERTOS_Init(void) {
 	Init_NS();
 	Init_WE();
 
+	NS.stateTimerHandle = osTimerNew(stateTimerCallback, osTimerOnce, &NS, &stateTimer_attributes);
+  	WE.stateTimerHandle = osTimerNew(stateTimerCallback, osTimerOnce, &WE, &stateTimer_attributes);
+
+	NS.currentState(&NS);
+	WE.currentState(&WE);
+
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -127,7 +117,7 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the timer(s) */
   /* creation of stateTimer */
-  stateTimerHandle = osTimerNew(stateTimerCallback, osTimerOnce, NULL, &stateTimer_attributes);
+//  stateTimerHandle = osTimerNew(stateTimerCallback, osTimerOnce, NULL, &stateTimer_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
@@ -138,12 +128,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of NorthTask */
-  NorthTaskHandle = osThreadNew(StartNorthTask, NULL, &NorthTask_attributes);
-
-  /* creation of EastTask */
-  EastTaskHandle = osThreadNew(StartEastTask, NULL, &EastTask_attributes);
-
   /* creation of PedestrianTask */
   PedestrianTaskHandle = osThreadNew(StartPedestrianTask, NULL, &PedestrianTask_attributes);
 
@@ -164,43 +148,6 @@ void MX_FREERTOS_Init(void) {
 
 }
 
-/* USER CODE BEGIN Header_StartNorthTask */
-/**
-  * @brief  Function implementing the NorthTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartNorthTask */
-void StartNorthTask(void *argument)
-{
-  /* USER CODE BEGIN StartNorthTask */
-  /* Infinite loop */
-  for(;;)
-  {
-	  NS.currentState(&NS);
-	  osDelay(50);
-  }
-  /* USER CODE END StartNorthTask */
-}
-
-/* USER CODE BEGIN Header_StartEastTask */
-/**
-* @brief Function implementing the EastTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartEastTask */
-void StartEastTask(void *argument)
-{
-  /* USER CODE BEGIN StartEastTask */
-  /* Infinite loop */
-  for(;;)
-  {
-	  WE.currentState(&WE);
-	  osDelay(50);
-  }
-  /* USER CODE END StartEastTask */
-}
 
 /* USER CODE BEGIN Header_StartPedestrianTask */
 /**
@@ -283,21 +230,20 @@ void stateTimerCallback(void *argument)
 	if(self->currentState == RED_STATE)			// RED --> GREEN
 	{
 		self->currentState = GREEN_STATE;
-		self->state_start_time = osKernelGetTickCount();
 		self->red_duration = 10000;
 	}
 	else if(self->currentState == GREEN_STATE)	// GREEN --> YELLOW
 	{
 		self->currentState = YELLOW_STATE;
-		self->state_start_time = osKernelGetTickCount();
 		self->green_duration = 8000;
 	}
 	else if(self->currentState == YELLOW_STATE)	// YELLOW --> RED
 	{
 		self->currentState = RED_STATE;
-		self->state_start_time = osKernelGetTickCount();
 		self->yellow_duration = 2000;
 	}
+
+	self->currentState(self);
   /* USER CODE END stateTimerCallback */
 }
 

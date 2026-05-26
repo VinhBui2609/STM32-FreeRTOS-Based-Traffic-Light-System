@@ -65,19 +65,22 @@ uint32_t getElapsed(TrafficLight_t* self)
 void RED_STATE(TrafficLight_t* self)
 {
 	RED(self, ON);
-	osTimerStart(stateTimerHandle, self->red_duration);
+	self->state_start_time = osKernelGetTickCount();
+	osTimerStart(self->stateTimerHandle, self->red_duration);
 }
 
 void GREEN_STATE(TrafficLight_t* self)
 {
 	GREEN(self, ON);
-	osTimerStart(stateTimerHandle, self->green_duration);
+	self->state_start_time = osKernelGetTickCount();
+	osTimerStart(self->stateTimerHandle, self->green_duration);
 }
 
 void YELLOW_STATE(TrafficLight_t* self)
 {
 	YELLOW(self, ON);
-	osTimerStart(stateTimerHandle, self->yellow_duration);
+	self->state_start_time = osKernelGetTickCount();
+	osTimerStart(self->stateTimerHandle, self->yellow_duration);
 }
 
 void Pedestrian(TrafficLight_t* current, TrafficLight_t* other) {
@@ -108,22 +111,33 @@ void Pedestrian(TrafficLight_t* current, TrafficLight_t* other) {
 // Output: State name + remaining time of that state
 // stateName is ** since its value is a string (an array of characters)
 void getStateInfo(TrafficLight_t* self, char** stateName, uint32_t* remainTime) {
-	uint32_t elapsed_time = getElapsed(self);
+	uint32_t elapsed = getElapsed(self);
+	uint32_t duration;
 
 	if(self->currentState == RED_STATE)
 	{
-		*remainTime = self->red_duration - elapsed_time;
+		duration = self->red_duration;
 		*stateName = "RED";
 	}
 	else if(self->currentState == GREEN_STATE)
 	{
-		*remainTime = self->green_duration - elapsed_time;
+		duration = self->green_duration;
 		*stateName = "GREEN";
 	}
 	else if(self->currentState == YELLOW_STATE)
 	{
-		*remainTime = self->yellow_duration - elapsed_time;
+		duration = self->yellow_duration;
 		*stateName = "YELLOW";
+	}
+
+	if(elapsed >= duration)
+	{
+		*remainTime = 0;
+	}
+	else
+	{
+		*remainTime =
+				duration - elapsed;
 	}
 }
 

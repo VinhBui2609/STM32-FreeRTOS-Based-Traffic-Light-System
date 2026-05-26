@@ -76,6 +76,8 @@ typedef struct TrafficLight {
 	uint32_t red_duration;
 	uint32_t yellow_duration;
 	uint32_t green_duration;
+
+	osTimerId_t stateTimerHandle;
 } TrafficLight_t;
 
 extern TrafficLight_t NS;
