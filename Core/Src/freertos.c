@@ -50,6 +50,13 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
+/* Definitions for LightTask */
+osThreadId_t LightTaskHandle;
+const osThreadAttr_t LightTask_attributes = {
+  .name = "LightTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Definitions for PedestrianTask */
 osThreadId_t PedestrianTaskHandle;
 const osThreadAttr_t PedestrianTask_attributes = {
@@ -64,11 +71,6 @@ const osThreadAttr_t LoggerTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
-/* Definitions for stateTimer */
-osTimerId_t stateTimerHandle;
-const osTimerAttr_t stateTimer_attributes = {
-  .name = "stateTimer"
-};
 /* Definitions for buttonEvent */
 osEventFlagsId_t buttonEventHandle;
 const osEventFlagsAttr_t buttonEvent_attributes = {
@@ -82,9 +84,9 @@ TrafficLight_t NS, WE;	// NS: North-South
 
 /* USER CODE END FunctionPrototypes */
 
+void StartLightTask(void *argument);
 void StartPedestrianTask(void *argument);
 void StartLoggerTask(void *argument);
-void stateTimerCallback(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -96,14 +98,7 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
 
-	Init_NS();
-	Init_WE();
-
-	NS.stateTimerHandle = osTimerNew(stateTimerCallback, osTimerOnce, &NS, &stateTimer_attributes);
-  	WE.stateTimerHandle = osTimerNew(stateTimerCallback, osTimerOnce, &WE, &stateTimer_attributes);
-
-	NS.currentState(&NS);
-	WE.currentState(&WE);
+  	TL_Init();
 
   /* USER CODE END Init */
 
@@ -115,10 +110,6 @@ void MX_FREERTOS_Init(void) {
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
-  /* Create the timer(s) */
-  /* creation of stateTimer */
-//  stateTimerHandle = osTimerNew(stateTimerCallback, osTimerOnce, NULL, &stateTimer_attributes);
-
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
@@ -128,6 +119,9 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
+  /* creation of LightTask */
+  LightTaskHandle = osThreadNew(StartLightTask, NULL, &LightTask_attributes);
+
   /* creation of PedestrianTask */
   PedestrianTaskHandle = osThreadNew(StartPedestrianTask, NULL, &PedestrianTask_attributes);
 
@@ -148,6 +142,39 @@ void MX_FREERTOS_Init(void) {
 
 }
 
+/* USER CODE BEGIN Header_StartLightTask */
+/**
+  * @brief  Function implementing the LightTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartLightTask */
+void StartLightTask(void *argument)
+{
+  /* USER CODE BEGIN StartLightTask */
+
+    TrafficState_t NS_lastState = -1;
+    TrafficState_t WE_lastState = -1;
+
+  /* Infinite loop */
+  for(;;)
+  {
+	/* NS state changed */
+	if(NS.currentState != NS_lastState)
+	{
+		NS_lastState = NS.currentState;
+	}
+
+	/* WE state changed */
+	if(WE.currentState != WE_lastState)
+	{
+		WE_lastState = WE.currentState;
+	}
+
+	osDelay(10);
+  }
+  /* USER CODE END StartLightTask */
+}
 
 /* USER CODE BEGIN Header_StartPedestrianTask */
 /**
@@ -172,7 +199,7 @@ void StartPedestrianTask(void *argument)
   		  sprintf(msg, "[BUTTON] North-South pedestrian request\r\n");
   		  LOG_Message(msg);
 
-  		  NS.buttonState(&NS, &WE);
+  		  NS.fpt_buttonState(&NS, &WE);
 	  }
 
 	  if(flags & BUTTON_WE)
@@ -180,7 +207,7 @@ void StartPedestrianTask(void *argument)
   		  sprintf(msg, "[BUTTON] West-East pedestrian request\r\n");
   		  LOG_Message(msg);
 
-  		  WE.buttonState(&WE, &NS);
+  		  WE.fpt_buttonState(&WE, &NS);
 	  }
 
   }
@@ -197,22 +224,16 @@ void StartPedestrianTask(void *argument)
 void StartLoggerTask(void *argument)
 {
   /* USER CODE BEGIN StartLoggerTask */
-	  char* NS_state;
-	  char* WE_state;
-
-	  uint32_t NS_remain;
-	  uint32_t WE_remain;
-
 	  char buffer[100];
 
   /* Infinite loop */
 	  for(;;)
 	  {
-		  getStateInfo(&NS, &NS_state, &NS_remain);
-		  getStateInfo(&WE, &WE_state, &WE_remain);
+		  getStateInfo(&NS);
+		  getStateInfo(&WE);
 
-		  sprintf(buffer, "NS: %s %lus | WE: %s %lus\r\n", NS_state, (NS_remain + 999) / 1000,
-				  	  	  	  	  	  	  	  	  	  	   WE_state, (WE_remain + 999) / 1000);
+		  sprintf(buffer, "NS: %s %lus | WE: %s %lus\r\n", NS.state, (NS.remainTime + 999) / 1000,
+				  	  	  	  	  	  	  	  	  	  	   WE.state, (WE.remainTime + 999) / 1000);
 		  LOG_Message(buffer);
 
 		  osDelay(1000);
@@ -221,34 +242,36 @@ void StartLoggerTask(void *argument)
   /* USER CODE END StartLoggerTask */
 }
 
+
+/* Private application code --------------------------------------------------*/
+/* USER CODE BEGIN Application */
+
 /* stateTimerCallback function */
 void stateTimerCallback(void *argument)
 {
   /* USER CODE BEGIN stateTimerCallback */
-	TrafficLight_t* self = (TrafficLight_t*)argument;
+	TrafficLight_t* tlHandler = (TrafficLight_t*)argument;
 
-	if(self->currentState == RED_STATE)			// RED --> GREEN
-	{
-		self->currentState = GREEN_STATE;
-		self->red_duration = 10000;
-	}
-	else if(self->currentState == GREEN_STATE)	// GREEN --> YELLOW
-	{
-		self->currentState = YELLOW_STATE;
-		self->green_duration = 8000;
-	}
-	else if(self->currentState == YELLOW_STATE)	// YELLOW --> RED
-	{
-		self->currentState = RED_STATE;
-		self->yellow_duration = 2000;
-	}
+    switch(tlHandler->currentState)
+    {
+        case RED:
+        	tlHandler->red_duration = DEF_RED;
+            CHANGE_STATE(tlHandler, GREEN);
+            break;
 
-	self->currentState(self);
+        case GREEN:
+        	tlHandler->green_duration = DEF_GREEN;
+            CHANGE_STATE(tlHandler, YELLOW);
+            break;
+
+        case YELLOW:
+        	tlHandler->yellow_duration = DEF_YELLOW;
+            CHANGE_STATE(tlHandler, RED);
+            break;
+    }
+
   /* USER CODE END stateTimerCallback */
 }
-
-/* Private application code --------------------------------------------------*/
-/* USER CODE BEGIN Application */
 
 /* USER CODE END Application */
 

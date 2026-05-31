@@ -28,48 +28,29 @@
 /* USER CODE END Includes */
 
 #define PRESSED		GPIO_PIN_RESET
-#define OFF			GPIO_PIN_RESET
-#define ON			GPIO_PIN_SET
-
-#define RED(self, x)													\
-	HAL_GPIO_WritePin((self)->lightPort, (self)->redPin, (x));			\
-	HAL_GPIO_WritePin((self)->lightPort, (self)->greenPin,				\
-						((x) == ON ? OFF : ON));						\
-	HAL_GPIO_WritePin((self)->lightPort, (self)->yellowPin, 			\
-						((x) == ON ? OFF : ON));						\
-
-#define GREEN(self, x)													\
-	HAL_GPIO_WritePin((self)->lightPort, (self)->redPin,				\
-						((x) == ON ? OFF : ON));						\
-	HAL_GPIO_WritePin((self)->lightPort, (self)->greenPin, (x));		\
-	HAL_GPIO_WritePin((self)->lightPort, (self)->yellowPin,				\
-						((x) == ON ? OFF : ON));						\
-
-#define YELLOW(self, x)													\
-	HAL_GPIO_WritePin((self)->lightPort, (self)->redPin,				\
-						((x) == ON ? OFF : ON));						\
-	HAL_GPIO_WritePin((self)->lightPort, (self)->greenPin,				\
-						((x) == ON ? OFF : ON));						\
-	HAL_GPIO_WritePin((self)->lightPort, (self)->yellowPin, (x));		\
-
-
 #define BUTTON_NS	(1U << 0)
 #define BUTTON_WE	(1U << 1)
+
+#define DEF_RED		10000
+#define DEF_GREEN	8000
+#define DEF_YELLOW	2000
+
+#define PEDED_RED		4000
+#define PEDES_GREEN		2000
+
+typedef enum
+{
+	RED,
+	GREEN,
+	YELLOW
+
+} TrafficState_t;
 
 
 typedef struct TrafficLight {
 
-	GPIO_TypeDef* lightPort;
-
-	uint16_t redPin;
-	uint16_t yellowPin;
-	uint16_t greenPin;
-
-	GPIO_TypeDef* buttonPort;
-	uint16_t buttonPin;
-
-	volatile void (*currentState)(struct TrafficLight* self);
-	volatile void (*buttonState)(struct TrafficLight* current, struct TrafficLight* other);
+	TrafficState_t currentState;
+	volatile void (*fpt_buttonState)(struct TrafficLight* current, struct TrafficLight* other);
 
 	uint32_t state_start_time;
 
@@ -77,31 +58,25 @@ typedef struct TrafficLight {
 	uint32_t yellow_duration;
 	uint32_t green_duration;
 
+	char* state;
+	uint32_t remainTime;
+
 	osTimerId_t stateTimerHandle;
+
 } TrafficLight_t;
 
-extern TrafficLight_t NS;
-extern TrafficLight_t WE;
 
-typedef void (*StateFunc)(TrafficLight_t* self);
-typedef void (*ButtonFunc)(TrafficLight_t* current, TrafficLight_t* other);
 
-void Init_NS(void);
-void Init_WE(void);
+void TL_Init();
+void Init_Light(TrafficLight_t* tlHandler);
 
-void RED_STATE(TrafficLight_t* self);
-void GREEN_STATE(TrafficLight_t* self);
-void YELLOW_STATE(TrafficLight_t* self);
-
-void RED_ON(TrafficLight_t* self);
-void YELLOW_ON(TrafficLight_t* self);
-void GRREN_ON(TrafficLight_t* self);
+void CHANGE_STATE(TrafficLight_t* tlHandler, TrafficState_t state);
 
 void Pedestrian(TrafficLight_t* current, TrafficLight_t* other);
 
-uint32_t getElapsed(TrafficLight_t* self);
-void getStateInfo(TrafficLight_t* self, char** stateName, uint32_t* remainTime);
+uint32_t getElapsed(TrafficLight_t* tlHandler);
+void getStateInfo(TrafficLight_t* tlHandler);
 
-
+void stateTimerCallback(void *argument);
 
 #endif /* INC_TRAFFIC_SYSTEM_H_ */

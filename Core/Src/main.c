@@ -174,30 +174,13 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
-	static uint32_t lastPress = 0;
 
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-  	// Avoiding multiple pressing
-	if(HAL_GetTick() - lastPress > 300)
-	{
-		// If North-West Road has Pedestrian
-		if(HAL_GPIO_ReadPin(NS_PedesButton_GPIO_Port, NS_PedesButton_Pin) == PRESSED)
-		{
-			lastPress = HAL_GetTick();
-			osEventFlagsSet(buttonEventHandle, BUTTON_NS);
-		}
 
-		// If West-East Road has Pedestrian
-		if(HAL_GPIO_ReadPin(WE_PedesButton_GPIO_Port, WE_PedesButton_Pin) == PRESSED)
-		{
-			lastPress = HAL_GetTick();
-			osEventFlagsSet(buttonEventHandle, BUTTON_WE);
-		}
-	}
   /* USER CODE END Callback 1 */
 }
 
