@@ -57,24 +57,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define WE_PedesButton_Pin GPIO_PIN_2
-#define WE_PedesButton_GPIO_Port GPIOC
-#define WE_PedesButton_EXTI_IRQn EXTI2_IRQn
-#define NS_PedesButton_Pin GPIO_PIN_3
-#define NS_PedesButton_GPIO_Port GPIOC
-#define NS_PedesButton_EXTI_IRQn EXTI3_IRQn
-#define NS_RED_Pin GPIO_PIN_0
-#define NS_RED_GPIO_Port GPIOA
-#define NS_YELLOW_Pin GPIO_PIN_1
-#define NS_YELLOW_GPIO_Port GPIOA
-#define NS_GREEN_Pin GPIO_PIN_4
-#define NS_GREEN_GPIO_Port GPIOA
-#define WE_GREEN_Pin GPIO_PIN_3
-#define WE_GREEN_GPIO_Port GPIOB
-#define WE_RED_Pin GPIO_PIN_4
-#define WE_RED_GPIO_Port GPIOB
-#define WE_YELLOW_Pin GPIO_PIN_5
-#define WE_YELLOW_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 #define NS_GPIO_Port	GPIOA

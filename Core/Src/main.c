@@ -19,12 +19,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "dma.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "traffic_system.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,8 +57,10 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern osMessageQueueId_t xPedReqQueueHandle;
-extern volatile uint8_t buttonEvent;
+extern osEventFlagsId_t buttonEventHandle;
+
+uint8_t rxData;
+
 /* USER CODE END 0 */
 
 /**
@@ -89,8 +91,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  HAL_UART_Receive_DMA(&huart2, &rxData, 1);
 
   /* USER CODE END 2 */
 
@@ -168,32 +173,13 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
-	static uint32_t lastPress = 0;
-	ButtonEvent_t event;
 
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-	if(HAL_GetTick() - lastPress > 300)
-	{
-		// If North-West Road has Pedestrian
-		if(HAL_GPIO_ReadPin(NS_PedesButton_GPIO_Port, NS_PedesButton_Pin) == GPIO_PIN_RESET)
-		{
-			lastPress = HAL_GetTick();
-			event = BUTTON_NS;
-			osMessageQueuePut(xPedReqQueueHandle, &event, 0, 0);
-		}
 
-		// If West-East Road has Pedestrian
-		if(HAL_GPIO_ReadPin(WE_PedesButton_GPIO_Port, WE_PedesButton_Pin) == GPIO_PIN_RESET)
-		{
-			lastPress = HAL_GetTick();
-			event = BUTTON_WE;
-			osMessageQueuePut(xPedReqQueueHandle, &event, 0, 0);
-		}
-	}
   /* USER CODE END Callback 1 */
 }
 

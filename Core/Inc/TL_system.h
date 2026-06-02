@@ -19,60 +19,64 @@
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef INC_TRAFFIC_SYSTEM_H_
-#define INC_TRAFFIC_SYSTEM_H_
+#ifndef INC_TL_SYSTEM_H_
+#define INC_TL_SYSTEM_H_
 
 /* USER CODE BEGIN Includes */
-#include "main.h"
+#include <TL_Tasks.h>
 #include "cmsis_os.h"
 /* USER CODE END Includes */
 
-typedef enum {
+#define PRESSED		GPIO_PIN_RESET
+#define BUTTON_NS	(1U << 0)
+#define BUTTON_WE	(1U << 1)
 
-	BUTTON_NS,
-	BUTTON_WE
+#define DEF_RED		10000
+#define DEF_GREEN	8000
+#define DEF_YELLOW	2000
 
-} ButtonEvent_t;
+#define PEDED_RED		4000
+#define PEDES_GREEN		2000
+
+typedef enum
+{
+	RED,
+	GREEN,
+	YELLOW
+
+} TrafficState_t;
+
 
 typedef struct TrafficLight {
 
-	GPIO_TypeDef* lightPort;
-
-	uint16_t redPin;
-	uint16_t yellowPin;
-	uint16_t greenPin;
-
-	GPIO_TypeDef* buttonPort;
-	uint16_t buttonPin;
-
-	volatile void (*currentState)(struct TrafficLight* self);
-	volatile void (*buttonState)(struct TrafficLight* current, struct TrafficLight* other);
+	TrafficState_t currentState;
+	volatile void (*fpt_buttonState)(struct TrafficLight* current, struct TrafficLight* other);
 
 	uint32_t state_start_time;
 
 	uint32_t red_duration;
 	uint32_t yellow_duration;
 	uint32_t green_duration;
-} TrafficLight;
 
-extern TrafficLight NS;
-extern TrafficLight WE;
+	char* stateName;
+	uint32_t remainTime;
 
-typedef void (*StateFunc)(TrafficLight* self);
-typedef void (*ButtonFunc)(TrafficLight* current, TrafficLight* other);
+	osTimerId_t stateTimerHandle;
 
-void Init_NS(void);
-void Init_WE(void);
-
-void RED_STATE(TrafficLight* self);
-void GREEN_STATE(TrafficLight* self);
-void YELLOW_STATE(TrafficLight* self);
-
-void Button_Pressed(TrafficLight* current, TrafficLight* other);
-
-uint32_t getElapsed(TrafficLight* self);
-void getStateInfo(TrafficLight* self, char** stateName, uint32_t* remainTime);
+} TrafficLight_t;
 
 
 
-#endif /* INC_TRAFFIC_SYSTEM_H_ */
+void TL_Init();
+void Init_Light(TrafficLight_t* tlHandler);
+
+void CHANGE_STATE(TrafficLight_t* tlHandler, TrafficState_t state);
+
+void Pedestrian(TrafficLight_t* current, TrafficLight_t* other);
+
+uint32_t getElapsed(TrafficLight_t* tlHandler);
+void getStateInfo(TrafficLight_t* tlHandler);
+
+void stateTimerCallback(void *argument);
+
+#endif /* INC_TL_SYSTEM_H_ */
