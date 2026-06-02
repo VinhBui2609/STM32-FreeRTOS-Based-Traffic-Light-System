@@ -25,7 +25,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "traffic_system.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

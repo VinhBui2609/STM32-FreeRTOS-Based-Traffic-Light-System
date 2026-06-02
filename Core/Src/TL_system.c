@@ -19,9 +19,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "traffic_system.h"
+#include <TL_system.h>
 #include "usart.h"
-#include "cmsis_os.h"
 /* USER CODE END Includes */
 
 
@@ -124,17 +123,17 @@ void getStateInfo(TrafficLight_t* tlHandler)
     {
         case RED:
             duration = tlHandler->red_duration;
-            tlHandler->state = "RED";
+            tlHandler->stateName = "RED";
             break;
 
         case GREEN:
             duration = tlHandler->green_duration;
-            tlHandler->state = "GREEN";
+            tlHandler->stateName = "GREEN";
             break;
 
         case YELLOW:
             duration = tlHandler->yellow_duration;
-            tlHandler->state = "YELLOW";
+            tlHandler->stateName = "YELLOW";
             break;
     }
 
@@ -151,7 +150,7 @@ void getStateInfo(TrafficLight_t* tlHandler)
 
 
 /* Initialization of Lights */
-extern TrafficLight_t NS, WE;
+TrafficLight_t NS, WE;
 
 void Init_Light(TrafficLight_t* tlHandler)
 {

@@ -19,11 +19,11 @@
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef INC_TRAFFIC_SYSTEM_H_
-#define INC_TRAFFIC_SYSTEM_H_
+#ifndef INC_TL_SYSTEM_H_
+#define INC_TL_SYSTEM_H_
 
 /* USER CODE BEGIN Includes */
-#include "main.h"
+#include <TL_Tasks.h>
 #include "cmsis_os.h"
 /* USER CODE END Includes */
 
@@ -58,7 +58,7 @@ typedef struct TrafficLight {
 	uint32_t yellow_duration;
 	uint32_t green_duration;
 
-	char* state;
+	char* stateName;
 	uint32_t remainTime;
 
 	osTimerId_t stateTimerHandle;
@@ -79,4 +79,4 @@ void getStateInfo(TrafficLight_t* tlHandler);
 
 void stateTimerCallback(void *argument);
 
-#endif /* INC_TRAFFIC_SYSTEM_H_ */
+#endif /* INC_TL_SYSTEM_H_ */

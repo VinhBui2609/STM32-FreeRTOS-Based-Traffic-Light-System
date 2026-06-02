@@ -25,8 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
-#include "traffic_system.h"
+#include <TL_system.h>
+#include <TL_Tasks.h>
 #include "logger.h"
 
 /* USER CODE END Includes */
@@ -50,43 +50,20 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for LightTask */
-osThreadId_t LightTaskHandle;
-const osThreadAttr_t LightTask_attributes = {
-  .name = "LightTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for PedestrianTask */
-osThreadId_t PedestrianTaskHandle;
-const osThreadAttr_t PedestrianTask_attributes = {
-  .name = "PedestrianTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
-/* Definitions for LoggerTask */
-osThreadId_t LoggerTaskHandle;
-const osThreadAttr_t LoggerTask_attributes = {
-  .name = "LoggerTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
-/* Definitions for buttonEvent */
-osEventFlagsId_t buttonEventHandle;
-const osEventFlagsAttr_t buttonEvent_attributes = {
-  .name = "buttonEvent"
+/* Definitions for Intersection_4 */
+osThreadId_t Intersection_4Handle;
+const osThreadAttr_t Intersection_4_attributes = {
+  .name = "Intersection_4",
+  .stack_size = 256 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-TrafficLight_t NS, WE;	// NS: North-South
-						// WE: West-East
 
 /* USER CODE END FunctionPrototypes */
 
-void StartLightTask(void *argument);
-void StartPedestrianTask(void *argument);
-void StartLoggerTask(void *argument);
+void StartIntersection_4(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -97,8 +74,6 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-
-  	TL_Init();
 
   /* USER CODE END Init */
 
@@ -119,22 +94,12 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of LightTask */
-  LightTaskHandle = osThreadNew(StartLightTask, NULL, &LightTask_attributes);
-
-  /* creation of PedestrianTask */
-  PedestrianTaskHandle = osThreadNew(StartPedestrianTask, NULL, &PedestrianTask_attributes);
-
-  /* creation of LoggerTask */
-  LoggerTaskHandle = osThreadNew(StartLoggerTask, NULL, &LoggerTask_attributes);
+  /* creation of Intersection_4 */
+  Intersection_4Handle = osThreadNew(StartIntersection_4, NULL, &Intersection_4_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
-  /* Create the event(s) */
-  /* creation of buttonEvent */
-  buttonEventHandle = osEventFlagsNew(&buttonEvent_attributes);
 
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
@@ -142,106 +107,24 @@ void MX_FREERTOS_Init(void) {
 
 }
 
-/* USER CODE BEGIN Header_StartLightTask */
+/* USER CODE BEGIN Header_StartIntersection_4 */
 /**
-  * @brief  Function implementing the LightTask thread.
+  * @brief  Function implementing the Intersection_4 thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartLightTask */
-void StartLightTask(void *argument)
+/* USER CODE END Header_StartIntersection_4 */
+void StartIntersection_4(void *argument)
 {
-  /* USER CODE BEGIN StartLightTask */
+  /* USER CODE BEGIN StartIntersection_4 */
 
-    TrafficState_t NS_lastState = -1;
-    TrafficState_t WE_lastState = -1;
+	TL_Task_Create();
+	TL_Event_Create();
+  	TL_Init();
 
-  /* Infinite loop */
-  for(;;)
-  {
-	/* NS state changed */
-	if(NS.currentState != NS_lastState)
-	{
-		NS_lastState = NS.currentState;
-	}
-
-	/* WE state changed */
-	if(WE.currentState != WE_lastState)
-	{
-		WE_lastState = WE.currentState;
-	}
-
-	osDelay(10);
-  }
-  /* USER CODE END StartLightTask */
+  	osThreadExit();
+  /* USER CODE END StartIntersection_4 */
 }
-
-/* USER CODE BEGIN Header_StartPedestrianTask */
-/**
-* @brief Function implementing the PedestrianTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartPedestrianTask */
-void StartPedestrianTask(void *argument)
-{
-  /* USER CODE BEGIN StartPedestrianTask */
-	char msg[100];
-	uint32_t flags;
-
-  /* Infinite loop */
-  for(;;)
-  {
-	  flags = osEventFlagsWait(buttonEventHandle, BUTTON_NS | BUTTON_WE, osFlagsWaitAny, osWaitForever);
-
-	  if(flags & BUTTON_NS)
-	  {
-  		  sprintf(msg, "[BUTTON] North-South pedestrian request\r\n");
-  		  LOG_Message(msg);
-
-  		  NS.fpt_buttonState(&NS, &WE);
-	  }
-
-	  if(flags & BUTTON_WE)
-	  {
-  		  sprintf(msg, "[BUTTON] West-East pedestrian request\r\n");
-  		  LOG_Message(msg);
-
-  		  WE.fpt_buttonState(&WE, &NS);
-	  }
-
-  }
-  /* USER CODE END StartPedestrianTask */
-}
-
-/* USER CODE BEGIN Header_StartLoggerTask */
-/**
-* @brief Function implementing the LoggerTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartLoggerTask */
-void StartLoggerTask(void *argument)
-{
-  /* USER CODE BEGIN StartLoggerTask */
-	  char buffer[100];
-
-  /* Infinite loop */
-	  for(;;)
-	  {
-		  getStateInfo(&NS);
-		  getStateInfo(&WE);
-
-		  sprintf(buffer, "NS: %s %lus | WE: %s %lus\r\n", NS.state, (NS.remainTime + 999) / 1000,
-				  	  	  	  	  	  	  	  	  	  	   WE.state, (WE.remainTime + 999) / 1000);
-		  LOG_Message(buffer);
-
-		  osDelay(1000);
-	  }
-
-  /* USER CODE END StartLoggerTask */
-}
-
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
