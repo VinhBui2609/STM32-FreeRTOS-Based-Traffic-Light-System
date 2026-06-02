@@ -94,21 +94,43 @@ void StartPedestrianTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	  flags = osEventFlagsWait(buttonEventHandle, BUTTON_NS | BUTTON_WE, osFlagsWaitAny, osWaitForever);
+	  flags = osEventFlagsWait(buttonEventHandle, PEDESTRIAN_NS | PEDESTRIAN_WE |
+			  	  	  	  	  	  	  	  	  	  EMERGENCY_NS | EMERGENCY_WE,
+												  osFlagsWaitAny, osWaitForever);
 
-	  if(flags & BUTTON_NS)
+	  if(flags & PEDESTRIAN_NS)
 	  {
   		  sprintf(msg, "[BUTTON] North-South pedestrian request\r\n");
   		  LOG_Message(msg);
 
+  		  NS.fpt_buttonState = Pedestrian;
   		  NS.fpt_buttonState(&NS, &WE);
 	  }
 
-	  if(flags & BUTTON_WE)
+	  if(flags & PEDESTRIAN_WE)
 	  {
   		  sprintf(msg, "[BUTTON] West-East pedestrian request\r\n");
   		  LOG_Message(msg);
 
+  		  WE.fpt_buttonState = Pedestrian;
+  		  WE.fpt_buttonState(&WE, &NS);
+	  }
+
+	  if(flags & EMERGENCY_NS)
+	  {
+  		  sprintf(msg, "[BUTTON] North-South emergency request\r\n");
+  		  LOG_Message(msg);
+
+  		  NS.fpt_buttonState = Emergency;
+  		  NS.fpt_buttonState(&NS, &WE);
+	  }
+
+	  if(flags & EMERGENCY_WE)
+	  {
+  		  sprintf(msg, "[BUTTON] West-East emergency request\r\n");
+  		  LOG_Message(msg);
+
+  		  WE.fpt_buttonState = Emergency;
   		  WE.fpt_buttonState(&WE, &NS);
 	  }
 
@@ -156,5 +178,33 @@ void TL_Event_Create()
 	/* Create the event(s) */
 	/* creation of buttonEvent */
 	buttonEventHandle = osEventFlagsNew(&buttonEvent_attributes);
+}
+
+
+/* stateTimerCallback function */
+void stateTimerCallback(void *argument)
+{
+  /* USER CODE BEGIN stateTimerCallback */
+	TrafficLight_t* tlHandle = (TrafficLight_t*)argument;
+
+    switch(tlHandle->currentState)
+    {
+        case RED:
+        	tlHandle->red_duration = DEF_RED;
+            CHANGE_STATE(tlHandle, GREEN);
+            break;
+
+        case GREEN:
+        	tlHandle->green_duration = DEF_GREEN;
+            CHANGE_STATE(tlHandle, YELLOW);
+            break;
+
+        case YELLOW:
+        	tlHandle->yellow_duration = DEF_YELLOW;
+            CHANGE_STATE(tlHandle, RED);
+            break;
+    }
+
+  /* USER CODE END stateTimerCallback */
 }
 

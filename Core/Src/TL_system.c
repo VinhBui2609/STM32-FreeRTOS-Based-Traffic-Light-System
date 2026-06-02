@@ -39,35 +39,42 @@ const osTimerAttr_t stateTimer_attributes = {
 
 
 /* Get the passed time of the light of a state */
-uint32_t getElapsed(TrafficLight_t* tlHandler)
+uint32_t getElapsed(TrafficLight_t* tlHandle)
 {
-	return osKernelGetTickCount() - tlHandler->state_start_time;
+	return osKernelGetTickCount() - tlHandle->state_start_time;
 }
 
 
-void CHANGE_STATE(TrafficLight_t* tlHandler, TrafficState_t state)
+void CHANGE_STATE(TrafficLight_t* tlHandle, TrafficState_t state)
 {
 	uint32_t duration = 0;
 
-	tlHandler->currentState = state;
-	tlHandler->state_start_time = osKernelGetTickCount();
+	tlHandle->currentState = state;
+	tlHandle->state_start_time = osKernelGetTickCount();
 
 	switch(state)
 	{
 		case RED:
-			duration = tlHandler->red_duration;
+			duration = tlHandle->red_duration;
 			break;
 
 		case GREEN:
-			duration = tlHandler->green_duration;
+			duration = tlHandle->green_duration;
 			break;
 
 		case YELLOW:
-			duration = tlHandler->yellow_duration;
+			duration = tlHandle->yellow_duration;
 			break;
 	}
 
-	osTimerStart(tlHandler->stateTimerHandle, duration);
+	osTimerStart(tlHandle->stateTimerHandle, duration);
+}
+
+
+void ALL_RED(TrafficLight_t* tlHandle)
+{
+	tlHandle->red_duration = DEF_RED;
+	CHANGE_STATE(tlHandle, RED);
 }
 
 
@@ -87,7 +94,7 @@ void Pedestrian(TrafficLight_t* current, TrafficLight_t* other) {
 	 * Elapsed: 2s
 	 * Remain: 6s
 	 * --> change green_duration to 4s
-	 * --> only need 2s more to getElapsed(tlHandler) >= green_duration = 4s
+	 * --> only need 2s more to getElapsed(tlHandle) >= green_duration = 4s
 	 */
 
 
@@ -96,7 +103,7 @@ void Pedestrian(TrafficLight_t* current, TrafficLight_t* other) {
         uint32_t elapsed_red = getElapsed(other);
 
         current->green_duration = elapsed_green + PEDES_GREEN;
-        other->red_duration = elapsed_red + PEDED_RED;
+        other->red_duration = elapsed_red + PEDES_RED;
 
         /* Restart current timer */
         osTimerStop(current->stateTimerHandle);
@@ -104,46 +111,59 @@ void Pedestrian(TrafficLight_t* current, TrafficLight_t* other) {
 
         /* Restart other timer */
         osTimerStop(other->stateTimerHandle);
-        osTimerStart(other->stateTimerHandle, PEDED_RED);
+        osTimerStart(other->stateTimerHandle, PEDES_RED);
     }
 
 	// if green is less than 2s, do nothing
 
 }
 
+
+void Emergency(TrafficLight_t* current, TrafficLight_t* other)
+{
+	if(current->currentState == RED)
+	{
+		current->green_duration = DEF_GREEN;
+		CHANGE_STATE(current, GREEN);
+
+		ALL_RED(other);
+	}
+}
+
+
 // Input: Light (NS, WE...)
 // Output: State name + remaining time of that state
 // stateName is ** since its value is a string (an array of characters)
-void getStateInfo(TrafficLight_t* tlHandler)
+void getStateInfo(TrafficLight_t* tlHandle)
 {
-	uint32_t elapsed = getElapsed(tlHandler);
+	uint32_t elapsed = getElapsed(tlHandle);
 	uint32_t duration = 0;
 
-    switch(tlHandler->currentState)
+    switch(tlHandle->currentState)
     {
         case RED:
-            duration = tlHandler->red_duration;
-            tlHandler->stateName = "RED";
+            duration = tlHandle->red_duration;
+            tlHandle->stateName = "RED";
             break;
 
         case GREEN:
-            duration = tlHandler->green_duration;
-            tlHandler->stateName = "GREEN";
+            duration = tlHandle->green_duration;
+            tlHandle->stateName = "GREEN";
             break;
 
         case YELLOW:
-            duration = tlHandler->yellow_duration;
-            tlHandler->stateName = "YELLOW";
+            duration = tlHandle->yellow_duration;
+            tlHandle->stateName = "YELLOW";
             break;
     }
 
 	if(elapsed >= duration)
 	{
-		tlHandler->remainTime = 0;
+		tlHandle->remainTime = 0;
 	}
 	else
 	{
-		tlHandler->remainTime = duration - elapsed;
+		tlHandle->remainTime = duration - elapsed;
 	}
 }
 
@@ -152,14 +172,14 @@ void getStateInfo(TrafficLight_t* tlHandler)
 /* Initialization of Lights */
 TrafficLight_t NS, WE;
 
-void Init_Light(TrafficLight_t* tlHandler)
+void Init_Light(TrafficLight_t* tlHandle)
 {
-	tlHandler->fpt_buttonState = Pedestrian;
+	tlHandle->fpt_buttonState = NULL;
 
-	tlHandler->state_start_time = osKernelGetTickCount();
-	tlHandler->red_duration = DEF_RED;
-	tlHandler->green_duration = DEF_GREEN;
-	tlHandler->yellow_duration = DEF_YELLOW;
+	tlHandle->state_start_time = osKernelGetTickCount();
+	tlHandle->red_duration = DEF_RED;
+	tlHandle->green_duration = DEF_GREEN;
+	tlHandle->yellow_duration = DEF_YELLOW;
 }
 
 void TL_Init()
@@ -182,13 +202,26 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	 {
 		 switch(rxData)
 		 {
+		 	 // North-South Pedestrian button
 		 	 case 'n':
-		 		 osEventFlagsSet(buttonEventHandle, BUTTON_NS);
+		 		 osEventFlagsSet(buttonEventHandle, PEDESTRIAN_NS);
 		 		 break;
 
+			 // West-East Pedestrian button
 		 	 case 'w':
-		 		 osEventFlagsSet(buttonEventHandle, BUTTON_WE);
+		 		 osEventFlagsSet(buttonEventHandle, PEDESTRIAN_WE);
 		 		 break;
+
+		 	 // North-South Emergency button
+		 	 case 'N':
+		 		 osEventFlagsSet(buttonEventHandle, EMERGENCY_NS);
+		 		 break;
+
+		 	 // West-East Emergency button
+		 	 case 'W':
+		 		 osEventFlagsSet(buttonEventHandle, EMERGENCY_WE);
+		 		 break;
+
 		 }
 
 		 // Restart the Interrupt reception
