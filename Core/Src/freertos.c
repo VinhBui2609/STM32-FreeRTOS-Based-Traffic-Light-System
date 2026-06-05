@@ -25,9 +25,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <TL_system.h>
-#include <TL_Tasks.h>
-#include "logger.h"
 
 /* USER CODE END Includes */
 
@@ -50,13 +47,6 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-/* Definitions for Intersection_4 */
-osThreadId_t Intersection_4Handle;
-const osThreadAttr_t Intersection_4_attributes = {
-  .name = "Intersection_4",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityHigh,
-};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -93,10 +83,6 @@ void MX_FREERTOS_Init(void) {
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* creation of Intersection_4 */
-  Intersection_4Handle = osThreadNew(StartIntersection_4, NULL, &Intersection_4_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -104,26 +90,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
-
-}
-
-/* USER CODE BEGIN Header_StartIntersection_4 */
-/**
-  * @brief  Function implementing the Intersection_4 thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartIntersection_4 */
-void StartIntersection_4(void *argument)
-{
-  /* USER CODE BEGIN StartIntersection_4 */
-
-	TL_Task_Create();
-	TL_Event_Create();
-  	TL_Init();
-
-  	osThreadExit();
-  /* USER CODE END StartIntersection_4 */
 }
 
 /* Private application code --------------------------------------------------*/
