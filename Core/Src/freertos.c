@@ -138,17 +138,17 @@ void stateTimerCallback(void *argument)
     switch(tlHandler->currentState)
     {
         case RED:
-        	tlHandler->red_duration = DEF_RED;
+        	tlHandler->green_duration = DEF_GREEN;
             CHANGE_STATE(tlHandler, GREEN);
             break;
 
         case GREEN:
-        	tlHandler->green_duration = DEF_GREEN;
+        	tlHandler->yellow_duration = DEF_YELLOW;
             CHANGE_STATE(tlHandler, YELLOW);
             break;
 
         case YELLOW:
-        	tlHandler->yellow_duration = DEF_YELLOW;
+        	tlHandler->red_duration = DEF_RED;
             CHANGE_STATE(tlHandler, RED);
             break;
     }
