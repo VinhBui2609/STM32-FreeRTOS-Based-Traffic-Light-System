@@ -1,9 +1,18 @@
-# Configuration folders
-.settings/
-Debug/
-Drivers/
+# STM32-IDE Config files
+/.settings/
+/Core/Startup/
+*.cproject
+*.mxproject
+*.project
+AdaptiveTrafficLightSystem.ioc
 
-# Configuration files
+# STM32 Build artifacts
+/Release/
+/Debug/
 *.launch
-*.debug
+
+# Cortex-ARM Drivers
+/Drivers
+
+# Cortex-ARM Specs files
 *.ld

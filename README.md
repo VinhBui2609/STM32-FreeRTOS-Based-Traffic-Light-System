@@ -1,56 +1,17 @@
-# STM32 FreeRTOS Traffic Light Controller
+# Adaptive Traffic Control System
 
-This project implements a traffic light controller using FreeRTOS on STM32.
-The system uses multiple RTOS tasks to manage LEDs, button input and many features
+This project implements a real-time adaptive traffic light control system on an STM32 microcontroller using FreeRTOS. The firmware is structured as a modular, event-driven embedded system in which each intersection operates as an independent RTOS task. Traffic signal timing is dynamically adjusted based on real-time traffic conditions, enabling congestion-aware phase control and scalable multi-intersection management. Inter-task communication is handled using FreeRTOS message queues and event flags to ensure deterministic and responsive system behavior.
 
-## I-Features:
-- Traffic light state machine
-- Pedestrian button handling
-- FreeRTOS task scheduling
-- Inter-task communication
+The system is complemented by a host-side Python-based user interface developed with Qt. This interface provides real-time visualization and interaction with the embedded system via UART communication. Traffic conditions and control commands are injected at runtime, enabling dynamic simulation of congestion scenarios without firmware recompilation. The interface visualizes intersection states, signal phases, and congestion levels, allowing direct observation of the system’s adaptive behavior under varying traffic loads.
 
+## Generate Code from STM32CubeMX
 
-## II-Hardware
-- STM32F411RE
-- LEDs
-- Push Button
-- Breadboard + Jumper Wires
+- Multiple STM32CubeMX `.ioc` files are stored in the `MXCube/` directory. Each file corresponds to a specific STM32F411 board variant (e.g., Nucleo, Discovery).
 
+- To generate code from a specific `.ioc` configuration:
 
-## III-Software & Tools
-- STM32CubeIDE
-- FreeRTOS
-- STM32 HAL Driver
-- CMSIS-RTOS v2
-
-
-## IV-FreeRTOS Features
-- Tasks
-- Queues
-- Mutexes
-- Binary Semaphores
-- Task Priorities
-
-
-## V-Tasks
-
-  ### 1.TrafficLightTask
-  Controls LED state transitions.
-  - RED
-  - RED_YELLOW
-  - GREEN
-  - YELLOW
-
-  ### 2.ButtonTask
-  Reads pedestrian button input.
-
-  ### 3.DisplayTask
-  Updates OLED display with current traffic state.
-
-
-
-## VI-Build & Flash
-1. Open project in STM32CubeIDE
-2. Build the project
-3. Flash to STM32 board
-4. Open serial monitor if UART is enabled
+1. Copy the selected `.ioc` file into the project root directory.  
+2. Rename the `.ioc` file to match the exact project root folder name (required for STM32CubeIDE project recognition).  
+3. Ensure that pin assignments and peripheral configurations are compatible across board variants when shared behavior is expected.  
+4. After code generation, verify that changes in auto-generated files correspond to expected `.ioc` modifications. Any mismatch may indicate configuration drift between versions.  
+5. After modification, copy the updated `.ioc` file back into the `MXCube/` directory following the predefined naming convention. The `.ioc` file in the project root should be treated as a temporary working file and is excluded from version control.

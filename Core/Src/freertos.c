@@ -25,9 +25,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <TL_system.h>
-#include <TL_Tasks.h>
-#include "logger.h"
 
 /* USER CODE END Includes */
 
@@ -117,44 +114,16 @@ void MX_FREERTOS_Init(void) {
 void StartIntersection_4(void *argument)
 {
   /* USER CODE BEGIN StartIntersection_4 */
-
-	TL_Task_Create();
-	TL_Event_Create();
-  	TL_Init();
-
-  	osThreadExit();
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
   /* USER CODE END StartIntersection_4 */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
-/* stateTimerCallback function */
-void stateTimerCallback(void *argument)
-{
-  /* USER CODE BEGIN stateTimerCallback */
-	TrafficLight_t* tlHandler = (TrafficLight_t*)argument;
-
-    switch(tlHandler->currentState)
-    {
-        case RED:
-        	tlHandler->green_duration = DEF_GREEN;
-            CHANGE_STATE(tlHandler, GREEN);
-            break;
-
-        case GREEN:
-        	tlHandler->yellow_duration = DEF_YELLOW;
-            CHANGE_STATE(tlHandler, YELLOW);
-            break;
-
-        case YELLOW:
-        	tlHandler->red_duration = DEF_RED;
-            CHANGE_STATE(tlHandler, RED);
-            break;
-    }
-
-  /* USER CODE END stateTimerCallback */
-}
 
 /* USER CODE END Application */
 
